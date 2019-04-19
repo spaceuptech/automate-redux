@@ -1,20 +1,29 @@
 {
   "name": "automate-redux",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A simple library to eliminate reducers.",
   "main": "index.js",
   "directories": {
     "test": "test"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "init": "mkdir dist",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean && npm run init",
+    "build": "babel ./index.js -d ./dist",
+    "pub": "npm run build && npm publish"
   },
   "repository": {
     "type": "git",
     "url": "git+https://Jayesh333@github.com/spaceuptech/automate-redux.git"
   },
   "keywords": [
-    "redux", "reducers"
+    "redux",
+    "reducers"
+  ],
+  "files": [
+    "dist"
   ],
   "author": "Jayesh Choudhary",
   "license": "ISC",
@@ -23,6 +32,7 @@
   },
   "homepage": "https://github.com/spaceuptech/automate-redux#readme",
   "devDependencies": {
+    "babel-cli": "^6.26.0",
     "mocha": "^6.1.3",
     "redux": "^4.0.1"
   },

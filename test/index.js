@@ -7,7 +7,7 @@ const {
   reset,
   del,
   get
-} = require("../src/index");
+} = require("../index");
 
 describe("set function", function() {
   it("should set a given state for a field which is already present", function() {
