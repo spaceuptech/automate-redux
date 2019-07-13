@@ -6,7 +6,9 @@ const {
   push,
   reset,
   del,
-  get
+  get,
+  increment,
+  decrement
 } = require("../index");
 
 describe("set function", function() {
@@ -82,6 +84,26 @@ describe("del function", function() {
     store.dispatch(del("name"));
     const newState = store.getState();
     assert.equal(newState.name, undefined);
+  });
+});
+
+describe("increment function", function() {
+  it("should increment a given field", function() {
+    const initialState = { foo: 2 };
+    const store = createStore(generateReducers(initialState));
+    store.dispatch(increment("foo"));
+    const newState = store.getState();
+    assert.equal(newState.foo, 3);
+  });
+});
+
+describe("decrement function", function() {
+  it("should decrement a given field", function() {
+    const initialState = { foo: 3 };
+    const store = createStore(generateReducers(initialState));
+    store.dispatch(decrement("foo"));
+    const newState = store.getState();
+    assert.equal(newState.foo, 2);
   });
 });
 

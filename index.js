@@ -22,6 +22,16 @@ exports.generateReducers = initialState => {
       case "PUSH":
         return dotProp.merge(state, action.path, [action.value]);
 
+      case "INCREMENT":
+        var initialValue = Number(dotProp.get(state, action.path, 0))
+        var newValue = initialValue + action.value
+        return dotProp.set(state, action.path, newValue)
+
+      case "DECREMENT":
+          var initialValue = Number(dotProp.get(state, action.path, 0))
+          var newValue = initialValue - action.value
+          return dotProp.set(state, action.path, newValue)
+
       case "DELETE":
         return dotProp.delete(state, action.path);
 
@@ -34,5 +44,7 @@ exports.generateReducers = initialState => {
 exports.set = (path, value) => ({ type: "SET", path, value });
 exports.push = (path, value) => ({ type: "PUSH", path, value });
 exports.del = path => ({ type: "DELETE", path });
+exports.increment = (path, value = 1) => ({ type: "INCREMENT", path, value });
+exports.decrement = (path, value = 1) => ({ type: "DECREMENT", path, value });
 exports.reset = path => ({ type: "RESET", path });
 exports.get = dotProp.get;
