@@ -13,15 +13,15 @@ However, it involves writing a lot of boiler plate code for even a simple todo a
 
 For a person who is new to web development and has just learned something like ReactJS, it can be overwhelming to learn a state management library like redux immediately. For the professionals who are used to redux, it's boring and painstaking to write reducers everytime.
 
-This gave us the motivation to completely eliminate the need of writing reducers.
+This gave us the motivation to completely eliminate the need of writing reducers. 
 
-## Installation
+## Setup
 
+To install, simply hit this command:
 ```
 npm install automate-redux
 ```
-
-Then to elimintate writing reducers, use `generateReducers` while creating redux store:
+Use `generateReducers` method to create a general purpose reducer and provide it to your store.
 
 ```js
 import { createStore } from "redux";
