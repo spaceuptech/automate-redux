@@ -38,7 +38,7 @@ const store = createStore(generateReducers(initialState));
 
 ```js
 import { createStore } from "redux";
-import { generateReducers, set, get, reset, push, del } from "automate-redux";
+import { generateReducers, get, set, increment, decrement, push, reset, del} from "automate-redux";
 
 // Initial state of redux
 const initialState = { foo: "1", items: ["1", "2"] };
@@ -51,6 +51,14 @@ store.dispatch(set("foo", "2"));
 
 // Set the value of a nested field
 store.dispatch(set("foo.bar", "1"));
+
+// Increment/decrement the value of a nested field
+store.dispatch(increment("foo.bar"));
+store.dispatch(decrement("foo.bar"));
+
+// Increment/decrement the value of a nested field by a particular value 
+store.dispatch(increment("foo.bar", 2));
+store.dispatch(decrement("foo.bar", 2));
 
 // Push the value of a field
 store.dispatch(push("items", "3"));
@@ -67,9 +75,17 @@ store.dispatch(del("items"));
 // Read a field's value
 get(store.getState(), "foo");
 
-// Return default value if field is not present
+// Return default value if field is undefined or null
 get(store.getState(), "some-field", "default value");
 
 // Read a nested field's value
 get(store.getState(), "foo.bar");
 ```
+
+## Credits
+- [dot-prop-immutable](https://github.com/debitoor/dot-prop-immutable): Made accessing nested paths a piece of cake!
+- [space-cloud](https:github.com/spaceuptech/space-cloud): An open-source Firebase + Heroku. This library came into existence while building the admin console of space cloud:)
+
+## License
+
+[MIT](http://opensource.org/licenses/MIT)
