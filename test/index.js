@@ -11,8 +11,8 @@ const {
   decrement
 } = require("../index");
 
-describe("set function", function() {
-  it("should set a given state for a field which is already present", function() {
+describe("set function", function () {
+  it("should set a given state for a field which is already present", function () {
     const initialState = { name: "foo" };
     const store = createStore(generateReducers(initialState));
     store.dispatch(set("name", "bar"));
@@ -20,7 +20,7 @@ describe("set function", function() {
     assert.equal(newState.name, "bar");
   });
 
-  it("should create a given field with the value if not already present", function() {
+  it("should create a given field with the value if not already present", function () {
     const initialState = {};
     const store = createStore(generateReducers(initialState));
     store.dispatch(set("name", "bar"));
@@ -29,8 +29,8 @@ describe("set function", function() {
   });
 });
 
-describe("reset function", function() {
-  it("should reset a given state for a field", function() {
+describe("reset function", function () {
+  it("should reset a given state for a field", function () {
     const initialState = { name: "foo" };
     const store = createStore(generateReducers(initialState));
     store.dispatch(set("name", "bar"));
@@ -41,7 +41,7 @@ describe("reset function", function() {
     assert.equal(newState.name, "foo");
   });
 
-  it("should reset entire state if no field mentioned", function() {
+  it("should reset entire state if no field mentioned", function () {
     const initialState = { foo: "1", bar: "2" };
     const store = createStore(generateReducers(initialState));
     store.dispatch(set("foo", "2"));
@@ -56,8 +56,8 @@ describe("reset function", function() {
   });
 });
 
-describe("push function", function() {
-  it("should push a given value for a field which is already present", function() {
+describe("push function", function () {
+  it("should push a given value for a field which is already present", function () {
     const initialState = { items: ["foo"] };
     const store = createStore(generateReducers(initialState));
     store.dispatch(push("items", "bar"));
@@ -67,7 +67,7 @@ describe("push function", function() {
     assert.equal(newState.items[1], "bar");
   });
 
-  it("should initialize an array with a given value for a field if not already present", function() {
+  it("should initialize an array with a given value for a field if not already present", function () {
     const initialState = {};
     const store = createStore(generateReducers(initialState));
     store.dispatch(push("items", "foo"));
@@ -77,8 +77,8 @@ describe("push function", function() {
   });
 });
 
-describe("del function", function() {
-  it("should delete a given field", function() {
+describe("del function", function () {
+  it("should delete a given field", function () {
     const initialState = { name: "foo" };
     const store = createStore(generateReducers(initialState));
     store.dispatch(del("name"));
@@ -87,8 +87,8 @@ describe("del function", function() {
   });
 });
 
-describe("increment function", function() {
-  it("should increment a given field", function() {
+describe("increment function", function () {
+  it("should increment a given field", function () {
     const initialState = { foo: 2 };
     const store = createStore(generateReducers(initialState));
     store.dispatch(increment("foo"));
@@ -97,8 +97,8 @@ describe("increment function", function() {
   });
 });
 
-describe("decrement function", function() {
-  it("should decrement a given field", function() {
+describe("decrement function", function () {
+  it("should decrement a given field", function () {
     const initialState = { foo: 3 };
     const store = createStore(generateReducers(initialState));
     store.dispatch(decrement("foo"));
@@ -107,16 +107,23 @@ describe("decrement function", function() {
   });
 });
 
-describe("get function", function() {
-  it("should get value for a given field which is present", function() {
+describe("get function", function () {
+  it("should get value for a given field which is present", function () {
     const initialState = { name: "foo" };
     const store = createStore(generateReducers(initialState));
     const newState = store.getState();
     assert.equal(get(newState, "name"), "foo");
   });
 
-  it("should get default value for a given field which is not present", function() {
+  it("should get default value for a given field which is not present", function () {
     const initialState = {};
+    const store = createStore(generateReducers(initialState));
+    const newState = store.getState();
+    assert.equal(get(newState, "name", "foo"), "foo");
+  });
+
+  it("should get default value for a given field if field value is null", function () {
+    const initialState = { name: null };
     const store = createStore(generateReducers(initialState));
     const newState = store.getState();
     assert.equal(get(newState, "name", "foo"), "foo");
