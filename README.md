@@ -67,7 +67,7 @@ store.dispatch(del("items"));
 // Read a field's value
 get(store.getState(), "foo");
 
-// Return default value if field is not present
+// Return default value if field is undefined or null
 get(store.getState(), "some-field", "default value");
 
 // Read a nested field's value
