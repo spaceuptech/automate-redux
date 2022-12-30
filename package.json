@@ -33,7 +33,7 @@
   "homepage": "https://github.com/spaceuptech/automate-redux#readme",
   "devDependencies": {
     "babel-cli": "^6.26.0",
-    "mocha": "^6.1.3",
+    "mocha": "^10.2.0",
     "redux": "^4.0.1"
   },
   "dependencies": {
