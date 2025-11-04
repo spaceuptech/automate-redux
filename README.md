@@ -38,7 +38,7 @@ const store = createStore(generateReducers(initialState));
 
 ```js
 import { createStore } from "redux";
-import { generateReducers, get, set, increment, decrement, push, reset, del} from "automate-redux";
+import { generateReducers, get, set, increment, decrement, push, reset } from "automate-redux";
 
 // Initial state of redux
 const initialState = { foo: "1", items: ["1", "2"] };
@@ -68,9 +68,6 @@ store.dispatch(reset("foo"));
 
 // Reset the entire state to initial value
 store.dispatch(reset());
-
-// Remove a field
-store.dispatch(del("items"));
 
 // Read a field's value
 get(store.getState(), "foo");

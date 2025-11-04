@@ -1,17 +1,17 @@
 import dotProp from "dot-prop-immutable";
-import { AnyAction } from "redux";
+import { Store, UnknownAction, applyMiddleware, compose, legacy_createStore } from "redux";
+import { thunk, ThunkDispatch } from "redux-thunk";
 
 /**
  * Generic action interface with optional path and value.
  */
-export interface AutomateReduxAction extends AnyAction {
+export interface AutomateReduxAction extends UnknownAction {
   type:
   | "SET"
   | "RESET"
   | "PUSH"
   | "INCREMENT"
   | "DECREMENT"
-  | "DELETE";
   path?: string;
   value?: any;
 }
@@ -22,7 +22,7 @@ export type AnyState = Record<string, any>;
  * Generate a Redux reducer automatically handling simple immutable updates.
  */
 export const generateReducers = <T extends AnyState>(initialState: T) => {
-  return (state: T = initialState, action: AutomateReduxAction): T | Partial<T> => {
+  return (state: T = initialState, action: AutomateReduxAction): T => {
     switch (action.type) {
       case "SET":
         return dotProp.set(state, action.path as string, action.value);
@@ -59,9 +59,6 @@ export const generateReducers = <T extends AnyState>(initialState: T) => {
         return dotProp.set(state, action.path as string, newValue);
       }
 
-      case "DELETE":
-        return dotProp.delete(state, action.path as string);
-
       default:
         return state;
     }
@@ -80,11 +77,6 @@ export const push = (path: string, value: any): AutomateReduxAction => ({
   type: "PUSH",
   path,
   value,
-});
-
-export const del = (path: string): AutomateReduxAction => ({
-  type: "DELETE",
-  path,
 });
 
 export const increment = (
@@ -123,4 +115,20 @@ export const get = <T = any>(
     return defaultValue;
   }
   return result;
+};
+
+export interface AutomateReduxStore<T> extends Store<T, UnknownAction> {
+  dispatch: ThunkDispatch<T, unknown, UnknownAction>;
+}
+
+export const createStore = <T extends Record<string, any>>(initialState: T): AutomateReduxStore<T> => {
+  const middlewareEnhancer = applyMiddleware(thunk);
+  const composedEnhancer = compose(middlewareEnhancer);
+
+  const store = legacy_createStore(
+    generateReducers(initialState),
+    composedEnhancer
+  ) as AutomateReduxStore<T>;
+
+  return store;
 };

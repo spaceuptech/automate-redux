@@ -5,7 +5,6 @@ import {
   set,
   push,
   reset,
-  del,
   get,
   increment,
   decrement,
@@ -76,16 +75,6 @@ describe("automate-redux", () => {
       const newState = store.getState();
       assert.strictEqual(newState.items.length, 1);
       assert.strictEqual(newState.items[0], "foo");
-    });
-  });
-
-  describe("del function", () => {
-    it("should delete a given field", () => {
-      const initialState: AnyState = { name: "foo" };
-      const store: Store<AnyState> = createStore(generateReducers(initialState));
-      store.dispatch(del("name"));
-      const newState = store.getState();
-      assert.strictEqual(newState.name, undefined);
     });
   });
 
