@@ -20,24 +20,52 @@ type AnyState = Record<string, any>;
 
 type Primitive = string | number | boolean | symbol | null | undefined;
 
+/** Detect literal-key Record<K,V> (e.g. Record<MyEnum, ...> or Record<'A'|'B', ...>) */
+type IsLiteralKeyRecord<T> =
+  T extends Record<infer K, any>
+  ? string extends K
+  ? false
+  : [K] extends [string]
+  ? true
+  : false
+  : false;
+
 /**
- * Recursively builds **dot path strings** for nested objects and arrays.
- * Enables full autocompletion in VSCode.
+ * DotPaths:
+ *  - For normal objects/arrays: enumerate keys and nested dot paths (precise).
+ *  - For literal-key Records (Record<Enum, ...>): enumerate those keys too.
+ *  - For generic Record<string, V>: allow dynamic key descent but do NOT introduce plain `string`.
  */
-export type DotPaths<T> = (
-  T extends Primitive
-  ? never
-  : {
+export type DotPaths<T> =
+  T extends Primitive ? never :
+
+  // If it's a Record with literal keys (enum or union), enumerate them
+  IsLiteralKeyRecord<T> extends true
+  ? {
     [K in keyof T & string]:
     | K
-    | (T[K] extends (infer U)[]
-      ? `${K}.${number}`
-      | `${K}.${number}.${DotPaths<U>}`
-      : T[K] extends Record<string, any>
-      ? `${K}.${DotPaths<T[K]>}`
-      : never);
+    | `${K}.${DotPaths<NonArray<T[K]>>}`
   }[keyof T & string]
-);
+
+  // Normal objects / arrays
+  : (
+    {
+      [K in keyof T & string]:
+      | K
+      | (T[K] extends (infer U)[]
+        // ✅ only numeric indexes and recurse into element type (not array prototype)
+        ? `${K}.${number}`
+        | `${K}.${number}.${DotPaths<NonArray<U>>}`
+        : T[K] extends Record<string, any>
+        ? `${K}.${DotPaths<NonArray<T[K]>>}`
+        : never)
+    }[keyof T & string]
+  )
+  // ✅ fallback for generic Record<string,V>
+  | (T extends Record<string, infer V> ? `${string}.${DotPaths<NonArray<V>>}` : never);
+
+type NonArray<T> = T extends (infer U)[] ? U : T;
+
 
 /**
  * Resolves the **value type** for a given dot path.
@@ -45,16 +73,14 @@ export type DotPaths<T> = (
 export type ValueAtPath<T, P extends string> =
   P extends `${infer K}.${infer Rest}`
   ? K extends keyof T
-  ? T[K] extends (infer U)[]
-  ? Rest extends `${number}.${infer Deep}`
-  ? ValueAtPath<U, Deep>
-  : Rest extends `${number}`
-  ? U
-  : never
-  : ValueAtPath<T[K], Rest>
+  ? ValueAtPath<T[K], Rest>
+  : T extends Record<string, infer V>        // <- NEW fallback
+  ? ValueAtPath<V, Rest>
   : never
   : P extends keyof T
   ? T[P]
+  : T extends Record<string, infer V>        // <- NEW fallback
+  ? V
   : never;
 
 /**
@@ -129,8 +155,8 @@ export function createActions<T extends Record<string, any>>() {
     decrement<P extends DotPaths<T>>(path: P, value: number = 1): AutomateReduxAction {
       return { type: "DECREMENT", path, value };
     },
-    reset(path?: string): AutomateReduxAction {
-      return { type: "RESET", path };
+    reset<P extends DotPaths<T> | undefined = undefined>(path?: P): AutomateReduxAction {
+      return { type: "RESET" as const, path };
     },
   };
 }

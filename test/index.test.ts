@@ -21,6 +21,18 @@ describe("automate-redux", () => {
       const newState = store.getState();
       assert.strictEqual(newState.name, "bar");
     });
+
+    it("should set nested state", () => {
+      enum TrnType {
+        SALES = "SALES",
+        PURCHASE = "PURCHASE",
+      }
+      const initialState: { transactions: Record<TrnType, { data: Record<string, any>[] }> } = { transactions: <Record<TrnType, { data: Record<string, any>[] }>>{} };
+      const store = createStore(initialState);
+      store.dispatch(store.actions.set("transactions.SALES.data", [{ name: "foo" }]));
+      const newState = store.getState();
+      assert.strictEqual(newState.transactions?.SALES.data?.[0].name, "foo");
+    });
   });
 
   describe("reset function", () => {
