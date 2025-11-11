@@ -5,7 +5,7 @@ import { thunk, ThunkDispatch } from "redux-thunk";
 /**
  * Generic action interface with optional path and value.
  */
-export interface AutomateReduxAction extends UnknownAction {
+interface AutomateReduxAction extends UnknownAction {
   type:
   | "SET"
   | "RESET"
@@ -16,12 +16,51 @@ export interface AutomateReduxAction extends UnknownAction {
   value?: any;
 }
 
-export type AnyState = Record<string, any>;
+type AnyState = Record<string, any>;
+
+type Primitive = string | number | boolean | symbol | null | undefined;
+
+/**
+ * Recursively builds **dot path strings** for nested objects and arrays.
+ * Enables full autocompletion in VSCode.
+ */
+export type DotPaths<T> = (
+  T extends Primitive
+  ? never
+  : {
+    [K in keyof T & string]:
+    | K
+    | (T[K] extends (infer U)[]
+      ? `${K}.${number}`
+      | `${K}.${number}.${DotPaths<U>}`
+      : T[K] extends Record<string, any>
+      ? `${K}.${DotPaths<T[K]>}`
+      : never);
+  }[keyof T & string]
+);
+
+/**
+ * Resolves the **value type** for a given dot path.
+ */
+export type ValueAtPath<T, P extends string> =
+  P extends `${infer K}.${infer Rest}`
+  ? K extends keyof T
+  ? T[K] extends (infer U)[]
+  ? Rest extends `${number}.${infer Deep}`
+  ? ValueAtPath<U, Deep>
+  : Rest extends `${number}`
+  ? U
+  : never
+  : ValueAtPath<T[K], Rest>
+  : never
+  : P extends keyof T
+  ? T[P]
+  : never;
 
 /**
  * Generate a Redux reducer automatically handling simple immutable updates.
  */
-export const generateReducers = <T extends AnyState>(initialState: T) => {
+const generateReducers = <T extends AnyState>(initialState: T) => {
   return (state: T = initialState, action: AutomateReduxAction): T => {
     switch (action.type) {
       case "SET":
@@ -65,63 +104,64 @@ export const generateReducers = <T extends AnyState>(initialState: T) => {
   };
 };
 
-// ---- Action Creators ---- //
+/* -------------------------------------------------------------------------- */
+/*                           🔹 Typed Action Factory                          */
+/* -------------------------------------------------------------------------- */
 
-export const set = (path: string, value: any): AutomateReduxAction => ({
-  type: "SET",
-  path,
-  value,
-});
-
-export const push = (path: string, value: any): AutomateReduxAction => ({
-  type: "PUSH",
-  path,
-  value,
-});
-
-export const increment = (
-  path: string,
-  value: number = 1
-): AutomateReduxAction => ({
-  type: "INCREMENT",
-  path,
-  value,
-});
-
-export const decrement = (
-  path: string,
-  value: number = 1
-): AutomateReduxAction => ({
-  type: "DECREMENT",
-  path,
-  value,
-});
-
-export const reset = (path?: string): AutomateReduxAction => ({
-  type: "RESET",
-  path,
-});
-
-/**
- * Get nested value safely using dot path with fallback.
- */
-export const get = <T = any>(
-  obj: Record<string, any>,
-  path: string,
-  defaultValue?: T
-): T => {
-  const result = dotProp.get(obj, path, defaultValue);
-  if (result === null && defaultValue !== undefined) {
-    return defaultValue;
-  }
-  return result;
-};
-
-export interface AutomateReduxStore<T> extends Store<T, UnknownAction> {
-  dispatch: ThunkDispatch<T, unknown, UnknownAction>;
+export function createActions<T extends Record<string, any>>() {
+  return {
+    set<P extends DotPaths<T>>(path: P, value: ValueAtPath<T, P>): AutomateReduxAction {
+      return { type: "SET", path, value };
+    },
+    push<P extends DotPaths<T>>(
+      path: P,
+      value: ValueAtPath<T, P> extends (infer U)[]
+        ? U
+        : ValueAtPath<T, P> extends (infer U)[] | undefined
+        ? U
+        : ValueAtPath<T, P>
+    ): AutomateReduxAction {
+      return { type: "PUSH", path, value };
+    },
+    increment<P extends DotPaths<T>>(path: P, value: number = 1): AutomateReduxAction {
+      return { type: "INCREMENT", path, value };
+    },
+    decrement<P extends DotPaths<T>>(path: P, value: number = 1): AutomateReduxAction {
+      return { type: "DECREMENT", path, value };
+    },
+    reset(path?: string): AutomateReduxAction {
+      return { type: "RESET", path };
+    },
+  };
 }
 
-export const createStore = <T extends Record<string, any>>(initialState: T): AutomateReduxStore<T> => {
+
+/* -------------------------------------------------------------------------- */
+/*                              🔹 Get Function                               */
+/* -------------------------------------------------------------------------- */
+
+export function get<T extends Record<string, any>, P extends DotPaths<T>>(
+  obj: T,
+  path: P,
+  defaultValue?: ValueAtPath<T, P>
+): ValueAtPath<T, P> {
+  const result = dotProp.get(obj, path, defaultValue);
+  if (result === null && defaultValue !== undefined) return defaultValue!;
+  return result;
+}
+
+export interface AutomateReduxStore<T extends Record<string, any>> extends Store<T, AutomateReduxAction> {
+  dispatch: ThunkDispatch<T, unknown, AutomateReduxAction>;
+  actions: ReturnType<typeof createActions<T>>;
+}
+
+/* -------------------------------------------------------------------------- */
+/*                         🔹 Store Creator (Typed)                           */
+/* -------------------------------------------------------------------------- */
+
+export const createStore = <T extends Record<string, any>>(
+  initialState: T
+): AutomateReduxStore<T> => {
   const middlewareEnhancer = applyMiddleware(thunk);
   const composedEnhancer = compose(middlewareEnhancer);
 
@@ -129,6 +169,9 @@ export const createStore = <T extends Record<string, any>>(initialState: T): Aut
     generateReducers(initialState),
     composedEnhancer
   ) as AutomateReduxStore<T>;
+
+  // attach typed actions (this enables autocompletion)
+  store.actions = createActions<T>();
 
   return store;
 };

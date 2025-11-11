@@ -21,53 +21,42 @@ To install, simply hit this command:
 ```
 npm install automate-redux
 ```
-Use `generateReducers` method to create a general purpose reducer and provide it to your store.
-
-```js
-import { createStore } from "redux";
-import { generateReducers } from "automate-redux";
-
-// Initial state of redux
-const initialState = { foo: "1" };
-
-// Generate reducers with the initial state and pass it to the redux store
-const store = createStore(generateReducers(initialState));
-```
 
 ## Usage
 
 ```js
-import { createStore } from "redux";
-import { generateReducers, get, set, increment, decrement, push, reset } from "automate-redux";
+import { createStore, get } from "automate-redux";
 
 // Initial state of redux
-const initialState = { foo: "1", items: ["1", "2"] };
+const initialState: { foo: string, items: string[] } = { foo: "1", items: ["1", "2"] };
 
 // Generate reducers with the initial state and pass it to the redux store
-const store = createStore(generateReducers(initialState));
+const store = createStore(initialState);
+
+// NOTE: All actions (set, increment, decrement, push, reset) inside the store.actions are type-safe and provide autocomplete based on the the initial state
 
 // Set the value of a field
-store.dispatch(set("foo", "2"));
+store.dispatch(store.actions.set("foo", "2"));
 
 // Set the value of a nested field
-store.dispatch(set("foo.bar", "1"));
+store.dispatch(store.actions.set("foo.bar", "1"));
 
 // Increment/decrement the value of a nested field
-store.dispatch(increment("foo.bar"));
-store.dispatch(decrement("foo.bar"));
+store.dispatch(store.actions.increment("foo.bar"));
+store.dispatch(store.actions.decrement("foo.bar"));
 
 // Increment/decrement the value of a nested field by a particular value 
-store.dispatch(increment("foo.bar", 2));
-store.dispatch(decrement("foo.bar", 2));
+store.dispatch(store.actions.increment("foo.bar", 2));
+store.dispatch(store.actions.decrement("foo.bar", 2));
 
 // Push the value of a field
-store.dispatch(push("items", "3"));
+store.dispatch(store.actions.push("items", "3"));
 
 // Reset a field to an initial value
-store.dispatch(reset("foo"));
+store.dispatch(store.actions.reset("foo"));
 
 // Reset the entire state to initial value
-store.dispatch(reset());
+store.dispatch(store.actions.reset());
 
 // Read a field's value
 get(store.getState(), "foo");
